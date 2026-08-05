@@ -2,9 +2,13 @@
  * Longest display name, in CODE POINTS.
  *
  * Sixteen, at the top of the agreed 12-16 range: long enough for a real Latvian name with a surname
- * initial, short enough that a lobby row and a results row cannot be pushed out of shape. The server
- * trims to 24, so this is deliberately STRICTER - the field can never promise more than the server
- * keeps, which is the direction that cannot lie.
+ * initial, short enough that a lobby row and a results row cannot be pushed out of shape.
+ *
+ * THIS IS THE CLIENT CAP, and it is the default rather than the law. `reppo-scores` stores 24 and
+ * passes its own constant as `sanitizeDisplayName`'s second argument; the asymmetry is deliberate,
+ * because a field that accepts more than the server keeps promises the player something that will
+ * not be shown, and that is the direction that cannot lie. A server importing this should pass its
+ * own cap and NOT assume `NAME_MAX` is its own.
  */
 export declare const NAME_MAX = 16;
 /**
@@ -35,6 +39,10 @@ export declare const NAME_MAX = 16;
  *
  * Pure and total: any input, including an empty one, returns a safe string. An empty result is
  * legal - the caller decides whether a nameless player is acceptable.
+ *
+ * @param max Cap in CODE POINTS, defaulting to `NAME_MAX` (16). Passed explicitly by callers that
+ * are not a game client - see the note on `NAME_MAX`. The cleaning rules are identical whatever the
+ * cap is, and that is the point: the cap is a policy each caller owns, the rules are not.
  */
-export declare function sanitizeDisplayName(raw: string): string;
+export declare function sanitizeDisplayName(raw: string, max?: number): string;
 //# sourceMappingURL=index.d.ts.map

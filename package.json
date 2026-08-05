@@ -1,6 +1,6 @@
 {
   "name": "@reppo/display-name",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The one display-name sanitiser for reppo.games. Bounds and cleans a free-text player name without ever corrupting Latvian diacritics.",
   "keywords": ["display-name", "sanitise", "unicode", "latvian", "leaderboard"],
   "homepage": "https://github.com/mreppo/display-name#readme",
