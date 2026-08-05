@@ -4,14 +4,14 @@ The one display-name sanitiser for [reppo.games](https://www.reppo.games/). It b
 free-text player name, and above all it never corrupts a Latvian one.
 
 ```sh
-npm install github:mreppo/display-name#v1.0.0
+npm install github:mreppo/display-name#v1.1.0
 ```
 
 It is a **git dependency pinned to a tag**, not an npm package - see
 [Why a git dependency](#why-a-git-dependency-and-not-the-registry). Consumers declare it as:
 
 ```json
-"@reppo/display-name": "github:mreppo/display-name#v1.0.0"
+"@reppo/display-name": "github:mreppo/display-name#v1.1.0"
 ```
 
 ```ts
@@ -81,10 +81,21 @@ A *mostly* invisible name is deliberately still allowed. It has readings this ca
 `NAME_MAX` is **16 code points** - long enough for a real Latvian name with a surname initial,
 short enough that a lobby row cannot be pushed out of shape.
 
-The `reppo-scores` server stores up to **24** and keeps that as its own constant. That asymmetry is
+`NAME_MAX` is the **default**, not the law. Pass your own as the second argument:
+
+```ts
+sanitizeDisplayName(raw)      // caps at NAME_MAX (16) - game clients
+sanitizeDisplayName(raw, 24)  // reppo-scores, which stores 24
+```
+
+The `reppo-scores` server keeps **24** as its own constant and passes it. That asymmetry is
 deliberate: **a client field must never accept more than the server keeps**, because that is the
-direction that cannot lie to a player. If you are writing a server, import `sanitizeDisplayName`
-for the cleaning and apply your own cap - do not assume `NAME_MAX` is yours.
+direction that cannot lie to a player. If you are writing a server, pass your own cap and do not
+assume `NAME_MAX` is yours.
+
+**The cap is policy each caller owns; the rules are not.** Every other rule applies identically
+whatever the cap - a looser cap does not loosen the cleaning. The invisibility check is applied
+against *your* cap, so 20 blanks and a `J` is refused at 16 and kept at 24.
 
 ## Why this is a package
 

@@ -22,9 +22,13 @@
  * Longest display name, in CODE POINTS.
  *
  * Sixteen, at the top of the agreed 12-16 range: long enough for a real Latvian name with a surname
- * initial, short enough that a lobby row and a results row cannot be pushed out of shape. The server
- * trims to 24, so this is deliberately STRICTER - the field can never promise more than the server
- * keeps, which is the direction that cannot lie.
+ * initial, short enough that a lobby row and a results row cannot be pushed out of shape.
+ *
+ * THIS IS THE CLIENT CAP, and it is the default rather than the law. `reppo-scores` stores 24 and
+ * passes its own constant as `sanitizeDisplayName`'s second argument; the asymmetry is deliberate,
+ * because a field that accepts more than the server keeps promises the player something that will
+ * not be shown, and that is the direction that cannot lie. A server importing this should pass its
+ * own cap and NOT assume `NAME_MAX` is its own.
  */
 export const NAME_MAX = 16;
 
@@ -56,8 +60,12 @@ export const NAME_MAX = 16;
  *
  * Pure and total: any input, including an empty one, returns a safe string. An empty result is
  * legal - the caller decides whether a nameless player is acceptable.
+ *
+ * @param max Cap in CODE POINTS, defaulting to `NAME_MAX` (16). Passed explicitly by callers that
+ * are not a game client - see the note on `NAME_MAX`. The cleaning rules are identical whatever the
+ * cap is, and that is the point: the cap is a policy each caller owns, the rules are not.
  */
-export function sanitizeDisplayName(raw: string): string {
+export function sanitizeDisplayName(raw: string, max: number = NAME_MAX): string {
   const cleaned = raw
     .normalize('NFC')
     // Whitespace-ish controls become a SPACE before the strip, not after. Deleting them first
@@ -67,7 +75,7 @@ export function sanitizeDisplayName(raw: string): string {
     .replace(/[\p{Cc}\p{Cf}]/gu, '')
     .replace(/ +/gu, ' ')
     .trim();
-  const capped = [...cleaned].slice(0, NAME_MAX).join('');
+  const capped = [...cleaned].slice(0, Math.max(0, max)).join('');
   // AFTER the cap, never before. Sixteen braille blanks followed by a `J` is all-invisible once
   // truncated, and checking first would pass it through on the strength of a letter that the very
   // next line throws away.
