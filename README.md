@@ -4,7 +4,14 @@ The one display-name sanitiser for [reppo.games](https://www.reppo.games/). It b
 free-text player name, and above all it never corrupts a Latvian one.
 
 ```sh
-npm install @reppo/display-name
+npm install github:mreppo/display-name#v1.0.0
+```
+
+It is a **git dependency pinned to a tag**, not an npm package - see
+[Why a git dependency](#why-a-git-dependency-and-not-the-registry). Consumers declare it as:
+
+```json
+"@reppo/display-name": "github:mreppo/display-name#v1.0.0"
 ```
 
 ```ts
@@ -87,9 +94,42 @@ a leaderboard - on the same site. At three copies that was a tracked risk
 ([`mreppo/blockfall#54`](https://github.com/mreppo/blockfall/issues/54)); the fourth consumer made
 it a package instead.
 
-Public on npm on purpose: it is a small string sanitiser with no secrets and no business logic, and
-a private dependency would break `npm ci` for the Cloudflare Workers Builds deploys that every
-consumer relies on.
+## Why a git dependency, and not the registry
+
+**Please do not "fix" this by publishing it.** The choice is deliberate and it is not laziness.
+
+The one hard constraint is that every consumer deploys through **Cloudflare Workers Builds**, which
+runs `npm ci` with no credentials of its own. That is what ruled out a *private* dependency, and it
+already cost `reppo-realtime` and `reppo-scores` their push-to-deploy
+([`reppo-games#29`](https://github.com/mreppo/reppo-games/issues/29)). A **public git URL satisfies
+it exactly as well as a public registry entry** - no account, no org, no scope to own.
+
+What the registry would add is thin here:
+
+| | |
+|---|---|
+| **Semver ranges** | Actively unwanted. All four consumers must agree on the same rules; a range lets them drift apart quietly, which is the entire failure this package exists to kill. A pinned tag makes every bump a deliberate, reviewable act in each repo. |
+| **Install caching** | A 6 kB tarball from GitHub. |
+| **Dependabot** | Disabled on personal repos here by policy - it is noise. |
+
+**`dist/` is committed** for the same reason: a git install runs no build, so the package must ship
+ready to import. No consumer runs `tsc` during `npm ci`, which is one less thing to fail inside
+Workers Builds. CI rebuilds and asserts `dist/` matches `src/` on every push, because a committed
+build that silently goes stale would ship the *old* rule to every consumer while the tests - which
+run against `src` - stayed green.
+
+**This is not a one-way door.** The package name, the `exports` map and `publishConfig.access:
+public` are all left exactly as a registry package needs them. If the registry ever earns its keep,
+`npm publish` is one command and nothing renames - consumers change a version string and nothing
+else.
+
+## Pinning
+
+The dependency points at a **tag**, never a branch. `#main` would be a moving reference, which
+reintroduces silent drift wearing a different hat: four repos claiming the same dependency and
+resolving to different code depending on when each last installed.
+
+Bumping is: tag here, then update the four consumers deliberately.
 
 ## Licence
 

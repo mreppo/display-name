@@ -18,3 +18,18 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
+      # dist/ IS COMMITTED, because consumers take this as a git dependency and a git
+      # install runs no build. That makes staleness the failure mode: a src change with a
+      # stale dist ships the OLD rule to every consumer while the tests - which run against
+      # src - stay green and say nothing.
+      #
+      # So the build runs above and this asserts it changed nothing. A verification that
+      # ran once at commit time reads exactly like one that runs every time; this is the
+      # one that runs every time (mreppo/blockfall#54).
+      - name: dist/ is in sync with src/
+        run: |
+          if ! git diff --exit-code --stat -- dist; then
+            echo "::error::dist/ is stale. Run 'npm run build' and commit the result."
+            exit 1
+          fi
