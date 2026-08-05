@@ -1,0 +1,38 @@
+{
+  "name": "@reppo/display-name",
+  "version": "1.0.0",
+  "description": "The one display-name sanitiser for reppo.games. Bounds and cleans a free-text player name without ever corrupting Latvian diacritics.",
+  "keywords": ["display-name", "sanitise", "unicode", "latvian", "leaderboard"],
+  "homepage": "https://github.com/mreppo/display-name#readme",
+  "bugs": "https://github.com/mreppo/display-name/issues",
+  "repository": { "type": "git", "url": "git+https://github.com/mreppo/display-name.git" },
+  "license": "MIT",
+  "author": "Mareks Reppo",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "files": ["dist"],
+  "engines": { "node": ">=18" },
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "prepublishOnly": "npm run build && npm test && npm run lint"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^2.1.8"
+  }
+}
